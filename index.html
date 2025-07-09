@@ -1,0 +1,719 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Pelajari fundamental UI/UX melalui roadmap sederhana, timeline sejarah desain, dan prinsip desain dengan tema luar angkasa untuk pengalaman belajar yang intuitif.">
+    <meta name="keywords" content="UI/UX, fundamental UI/UX, roadmap UI/UX, belajar UI/UX, desain antarmuka, pengalaman pengguna, user-centered design, usability">
+    <title>Fundamental UI/UX</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: url('https://images.unsplash.com/photo-1465101162946-4377e57745c3?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+            font-size: 16px;
+            padding-bottom: 80px; /* Space for bottom menu in mobile */
+        }
+        .hero-section {
+            background: linear-gradient(135deg, rgba(0, 123, 255, 0.8), rgba(163, 119, 227, 0.8));
+            padding: 120px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1538370965046-79c0d6907b47?q=80&w=1920&auto=format&fit=crop') no-repeat center center;
+            opacity: 0.2;
+            z-index: 0;
+            transform: translateY(0);
+            transition: transform 0.5s ease;
+        }
+        .hero-section:hover::before {
+            transform: translateY(-20px);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        .progress-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(26, 26, 61, 0.95);
+            padding: 10px 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        .progress-header .progress {
+            height: 8px;
+            background: #1a1a3d;
+            border-radius: 4px;
+        }
+        .progress-bar {
+            background: linear-gradient(to right, #00d4ff, #a777e3);
+        }
+        .timeline, .roadmap {
+            position: relative;
+            margin: 60px 0;
+            padding: 0 20px;
+        }
+        .timeline::before, .roadmap::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: linear-gradient(to bottom, #00d4ff, #a777e3);
+            left: 50%;
+            margin-left: -3px;
+        }
+        .timeline-item, .roadmap-item {
+            margin-bottom: 60px;
+            position: relative;
+        }
+        .timeline-item::before, .roadmap-item::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            width: 28px;
+            height: 28px;
+            background: #00d4ff;
+            border: 4px solid #1a1a3d;
+            border-radius: 50%;
+            left: 50%;
+            margin-left: -14px;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+        .timeline-item:hover::before, .roadmap-item:hover::before {
+            transform: scale(1.2);
+        }
+        .timeline-content {
+            padding: 25px;
+            background: rgba(26, 26, 61, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .roadmap-content {
+            padding: 25px;
+            background: #ffffff; /* White background for roadmap */
+            color: #1a1a3d; /* Dark text for contrast */
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .timeline-content:hover, .roadmap-content:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+        .timeline-img, .roadmap-img {
+            max-width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.4s ease, filter 0.4s ease;
+        }
+        .roadmap-img {
+            background: #ffffff; /* White background for roadmap image */
+        }
+        .timeline-img:hover, .roadmap-img:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+        .progress {
+            height: 8px;
+            background: #1a1a3d;
+        }
+        .icon {
+            font-size: 2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        .roadmap-content .icon {
+            color: #1a1a3d; /* Dark icon for white background */
+        }
+        .icon:hover {
+            transform: rotate(15deg);
+            color: #a777e3;
+        }
+        .navbar {
+            background: rgba(26, 26, 61, 0.95);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        .nav-link {
+            color: #ffffff !important;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #00d4ff !important;
+        }
+        .footer {
+            background: rgba(26, 26, 61, 0.95);
+            color: #ffffff;
+            padding: 50px 0;
+        }
+        .tooltip-inner {
+            background-color: #00d4ff;
+            color: #1a1a3d;
+        }
+        .source-link {
+            font-size: 0.9rem;
+            color: #a777e3;
+        }
+        .roadmap-content .source-link {
+            color: #1a1a3d; /* Dark link for white background */
+        }
+        .source-link:hover {
+            color: #00d4ff;
+        }
+        /* Bottom Menu for Mobile */
+        .bottom-menu {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(26, 26, 61, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 8px 0;
+            box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.3);
+        }
+        .bottom-menu .nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8rem;
+            padding: 5px;
+            transition: transform 0.3s ease;
+        }
+        .bottom-menu .nav-link:hover {
+            transform: scale(1.1);
+            color: #00d4ff !important;
+        }
+        .bottom-menu .nav-link i {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+        @media (max-width: 767px) {
+            .bottom-menu {
+                display: flex;
+                justify-content: space-around;
+            }
+            .navbar {
+                display: none; /* Hide top navbar on mobile */
+            }
+            .progress-header {
+                top: 0; /* Adjust for no navbar */
+            }
+            .timeline::before, .roadmap::before {
+                left: 20px;
+            }
+            .timeline-item::before, .roadmap-item::before {
+                left: 6px;
+            }
+            .timeline-content, .roadmap-content {
+                margin-left: 40px;
+                padding: 10px;
+            }
+            .timeline-img, .roadmap-img {
+                max-height: 140px;
+                object-fit: cover;
+            }
+            .hero-section {
+                padding: 100px 0;
+            }
+            .icon {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar (Desktop) -->
+    <nav class="navbar navbar-expand-lg sticky-top" role="navigation">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white" href="#" aria-label="Fundamental UI/UX Home"><i class="fas fa-rocket me-2"></i> Fundamental UI/UX</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home" aria-label="Beranda"><i class="fas fa-home me-1"></i> Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#roadmap" aria-label="Roadmap"><i class="fas fa-map-signs me-1"></i> Roadmap</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#timeline" aria-label="Timeline"><i class="fas fa-stream me-1"></i> Timeline</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about" aria-label="Tentang"><i class="fas fa-info-circle me-1"></i> Tentang</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Bottom Menu (Mobile) -->
+    <nav class="bottom-menu" role="navigation">
+        <a class="nav-link" href="#home" aria-label="Beranda"><i class="fas fa-home"></i> Beranda</a>
+        <a class="nav-link" href="#roadmap" aria-label="Roadmap"><i class="fas fa-map-signs"></i> Roadmap</a>
+        <a class="nav-link" href="#timeline" aria-label="Timeline"><i class="fas fa-stream"></i> Timeline</a>
+        <a class="nav-link" href="#about" aria-label="Tentang"><i class="fas fa-info-circle"></i> Tentang</a>
+    </nav>
+
+    <!-- Progress Header -->
+    <div class="progress-header">
+        <div class="container">
+            <div class="progress" id="scroll-progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container hero-content">
+            <h1 class="display-3 fw-bold" data-aos="zoom-in"><i class="fas fa-space-shuttle me-2"></i> Fundamental UI/UX</h1>
+            <p class="lead" data-aos="fade-up" data-aos-delay="100">Pelajari dasar-dasar UI/UX melalui roadmap sederhana dan jelajahi sejarah desain dengan tema luar angkasa</p>
+            <a href="#roadmap" class="btn btn-outline-light btn-lg mt-4" data-aos="fade-up" data-aos-delay="200" aria-label="Mulai Belajar"><i class="fas fa-rocket me-2"></i> Mulai Belajar</a>
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section id="timeline" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5" data-aos="fade-up"><i class="fas fa-star me-2"></i> Timeline Perkembangan UI/UX</h2>
+            <div class="timeline">
+                <!-- 1990s -->
+                <div class="timeline-item" data-aos="fade-right" id="era-1990">
+                    <div class="row">
+                        <div class="col-md-6 timeline-content">
+                            <i class="fas fa-desktop icon"></i>
+                            <h3>1990-an: Awal Mula GUI</h3>
+                            <div class="progress mb-3" data-aos="fade-up" data-aos-delay="100">
+                                <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p>Graphical User Interface (GUI) diperkenalkan melalui Windows 3.0 dan Mac OS. Desain sederhana dengan palet warna terbatas (16-256 warna) dan ikon pixelated.</p>
+                            <p><strong>Contoh:</strong> Windows 3.1, Macintosh System 7</p>
+                            <p><strong>Pengembangan:</strong> Dibuat dengan C/C++, fokus pada efisiensi karena keterbatasan hardware (RAM 1-4 MB, CPU 16 MHz).</p>
+                            <div class="row">
+                                <div class="col-6">
+                                    <img src="http://toastytech.com/guis/win31progman3.png" srcset="http://toastytech.com/guis/win31progman3.png 600w, http://toastytech.com/guis/win31progman3.png 300w" class="timeline-img" data-bs-toggle="modal" data-bs-target="#modal1990a" alt="Windows 3.1 Interface" loading="lazy" aria-describedby="modal1990a-desc">
+                                    <p class="source-link"><a href="http://toastytech.com/guis/win31.html" target="_blank">Sumber: ToastyTech</a></p>
+                                </div>
+                                <div class="col-6">
+                                    <img src="https://static.wikia.nocookie.net/ipod/images/1/13/Macintosh_System_7.5.3_screenshot.png/revision/latest?cb=20100819232719" srcset="https://static.wikia.nocookie.net/ipod/images/1/13/Macintosh_System_7.5.3_screenshot.png/revision/latest?cb=20100819232719 600w, https://static.wikia.nocookie.net/ipod/images/1/13/Macintosh_System_7.5.3_screenshot.png/revision/latest?cb=20100819232719 300w" class="timeline-img" data-bs-toggle="modal" data-bs-target="#modal1990b" alt="Macintosh System 7" loading="lazy" aria-describedby="modal1990b-desc">
+                                    <p class="source-link"><a href="https://archive.org/details/AppleMacintoshSystem701" target="_blank">Sumber: Archive.org</a></p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-3" data-bs-toggle="tooltip" title="Skeuomorphism meniru elemen fisik seperti tombol 3D" aria-label="Info Lebih 1990-an"><i class="fas fa-info-circle me-1"></i> Info Lebih</button>
+                        </div>
+                        <div class="col-md-6"></div>
+                    </div>
+                </div>
+                <!-- 2000s -->
+                <div class="timeline-item" data-aos="fade-left" id="era-2000">
+                    <div class="row">
+                        <div class="col-md-6"></div>
+                        <div class="col-md-6 timeline-content">
+                            <i class="fas fa-globe icon"></i>
+                            <h3>2000-an: Web 1.0 ke Web 2.0</h3>
+                            <div class="progress mb-3" data-aos="fade-up" data-aos-delay="100">
+                                <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p>Web bertransisi dari statis ke interaktif dengan CSS, JavaScript, dan AJAX. Fokus pada usability dan tata letak grid-based.</p>
+                            <p><strong>Contoh:</strong> MySpace, Early Google</p>
+                            <p><strong>Pengembangan:</strong> HTML4, CSS2, JavaScript, dan PHP untuk server-side scripting.</p>
+                            <div class="row">
+                                <div class="col-6">
+                                    <img src="https://images.squarespace-cdn.com/content/v1/639cc2b00e238a7078752259/ae5a02c7-fed8-453a-ad92-8aa6287d20bc/wwwmyspacecom.png?format=1500w" srcset="https://images.squarespace-cdn.com/content/v1/639cc2b00e238a7078752259/ae5a02c7-fed8-453a-ad92-8aa6287d20bc/wwwmyspacecom.png?format=1500w 600w, https://images.squarespace-cdn.com/content/v1/639cc2b00e238a7078752259/ae5a02c7-fed8-453a-ad92-8aa6287d20bc/wwwmyspacecom.png?format=750w 300w" class="timeline-img" data-bs-toggle="modal" data-bs-target="#modal2000a" alt="MySpace 2005" loading="lazy" aria-describedby="modal2000a-desc">
+                                    <p class="source-link"><a href="https://www.capital-commerce.com/insight/echoes-of-myspace-how-the-first-social-media-titan-lost-its-crown" target="_blank">Sumber: Capital Commerce</a></p>
+                                </div>
+                                <div class="col-6">
+                                    <img src="https://www.webdesignmuseum.org/uploaded/timeline/google/google-2000.png" srcset="https://www.webdesignmuseum.org/uploaded/timeline/google/google-2000.png 600w, https://www.webdesignmuseum.org/uploaded/timeline/google/google-2000.png 300w" class="timeline-img" data-bs-toggle="modal" data-bs-target="#modal2000b" alt="Google 2000" loading="lazy" aria-describedby="modal2000b-desc">
+                                    <p class="source-link"><a href="https://www.webdesignmuseum.org/gallery/google-2000" target="_blank">Sumber: Web Design Museum</a></p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-3" data-bs-toggle="tooltip" title="AJAX memungkinkan interaksi tanpa reload halaman" aria-label="Info Lebih 2000-an"><i class="fas fa-info-circle me-1"></i> Info Lebih</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- 2010s -->
+                <div class="timeline-item" data-aos="fade-right" id="era-2010">
+                    <div class="row">
+                        <div class="col-md-6 timeline-content">
+                            <i class="fas fa-mobile-alt icon"></i>
+                            <h3>2010-an: Era Mobile dan Modern Design</h3>
+                            <div class="progress mb-3" data-aos="fade-up" data-aos-delay="100">
+                                <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p>Smartphone mempopulerkan desain responsif. Desain modern dengan fokus pada estetika dan fungsionalitas mendominasi.</p>
+                            <p><strong>Contoh:</strong> Apple 2010, SEGA 2013</p>
+                            <p><strong>Pengembangan:</strong> HTML5, CSS3, framework seperti Bootstrap dan React.js.</p>
+                            <div class="row">
+                                <div class="col-6">
+                                    <img src="https://www.webdesignmuseum.org/uploaded/fullscreen/2010/apple-2010.jpg" srcset="https://www.webdesignmuseum.org/uploaded/fullscreen/2010/apple-2010.jpg 600w, https://www.webdesignmuseum.org/uploaded/fullscreen/2010/apple-2010.jpg 300w" class="timeline-img" data-bs-toggle="modal" data-bs-target="#modal2010a" alt="Apple 2010 Website" loading="lazy" aria-describedby="modal2010a-desc">
+                                    <p class="source-link"><a href="https://www.webdesignmuseum.org/gallery/apple-in-2010" target="_blank">Sumber: Web Design Museum</a></p>
+                                </div>
+                                <div class="col-6">
+                                    <img src="https://www.webdesignmuseum.org/uploaded/fullscreen/2013/sega-2013.jpg" srcset="https://www.webdesignmuseum.org/uploaded/fullscreen/2013/sega-2013.jpg 600w, https://www.webdesignmuseum.org/uploaded/fullscreen/2013/sega-2013.jpg 300w" class="timeline-img" data-bs-toggle="modal" data-bs-target="#modal2010b" alt="SEGA 2013 Website" loading="lazy" aria-describedby="modal2010b-desc">
+                                    <p class="source-link"><a href="https://www.webdesignmuseum.org/gallery/sega-in-2013" target="_blank">Sumber: Web Design Museum</a></p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-3" data-bs-toggle="tooltip" title="Desain responsif menyesuaikan tampilan untuk semua perangkat" aria-label="Info Lebih 2010-an"><i class="fas fa-info-circle me-1"></i> Info Lebih</button>
+                        </div>
+                        <div class="col-md-6"></div>
+                    </div>
+                </div>
+                <!-- 2020s -->
+                <div class="timeline-item" data-aos="fade-left" id="era-2020">
+                    <div class="row">
+                        <div class="col-md-6"></div>
+                        <div class="col-md-6 timeline-content">
+                            <i class="fas fa-robot icon"></i>
+                            <h3>2020-an: Neumorphism dan AI</h3>
+                            <div class="progress mb-3" data-aos="fade-up" data-aos-delay="100">
+                                <div class="progress-bar" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p>Desain menggabungkan neumorphism, animasi mikro, dan personalisasi berbasis AI. AR/VR meningkatkan pengalaman imersif.</p>
+                            <p><strong>Contoh:</strong> <a href="https://www.apple.com/id/" target="_blank" class="source-link">Apple</a>, <a href="https://www.gojek.com/en-id" target="_blank" class="source-link">Gojek</a>, <a href="https://demo.themesberg.com/neumorphism-ui/" target="_blank" class="source-link">Neumorphism UI</a>, <a href="https://www.figma.com" target="_blank" class="source-link">Figma</a>, <a href="https://uizard.io/" target="_blank" class="source-link">Uizard</a></p>
+                            <p><strong>Pengembangan:</strong> Next.js, integrasi AI untuk analitik pengguna.</p>
+                            <div class="row">
+                                <div class="col-6">
+                                    <img src="https://demo.themesberg.com/neumorphism-ui/assets/img/neumorphism-ui-screenshot.jpg" class="timeline-img" data-bs-toggle="modal" data-bs-target="#modal2020a" alt="Neumorphic UI Design" loading="lazy" aria-describedby="modal2020a-desc">
+                                    <p class="source-link"><a href="https://demo.themesberg.com/neumorphism-ui/" target="_blank">Sumber: Themesberg</a></p>
+                                </div>
+                                <div class="col-6">
+                                    <img src="https://www.figma.com/images/figma-homepage-screenshot.jpg" class="timeline-img" data-bs-toggle="modal" data-bs-target="#modal2020b" alt="Figma Design Interface" loading="lazy" aria-describedby="modal2020b-desc">
+                                    <p class="source-link"><a href="https://www.figma.com" target="_blank">Sumber: Figma</a></p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-light btn-sm mt-3" data-bs-toggle="tooltip" title="Neumorphism menggabungkan skeumorphism dan flat design" aria-label="Info Lebih 2020-an"><i class="fas fa-info-circle me-1"></i> Info Lebih</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-5" style="background: rgba(26, 26, 61, 0.85); backdrop-filter: blur(10px);">
+        <div class="container">
+            <h2 class="text-center mb-5" data-aos="fade-up"><i class="fas fa-star me-2"></i> Tentang UI/UX</h2>
+            <div class="row">
+                <div class="col-md-6" data-aos="fade-right">
+                    <h3><i class="fas fa-paint-brush me-2"></i> Apa Itu UI Design?</h3>
+                    <p>User Interface (UI) Design adalah proses merancang tampilan visual produk, seperti website atau aplikasi. UI berfokus pada estetika, seperti warna, tipografi, dan tombol, untuk menciptakan antarmuka yang menarik dan mudah digunakan.</p>
+                </div>
+                <div class="col-md-6" data-aos="fade-left">
+                    <h3><i class="fas fa-heartbeat me-2"></i> Apa Itu UX Design?</h3>
+                    <p>User Experience (UX) Design adalah proses memastikan produk nyaman dan intuitif digunakan. UX mencakup riset pengguna, navigasi, dan struktur desain untuk memberikan pengalaman yang memuaskan.</p>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-md-12" data-aos="fade-up">
+                    <h3><i class="fas fa-image me-2"></i> Perbedaan UI dan UX</h3>
+                    <img src="https://miro.medium.com/v2/resize:fit:3830/format:webp/1*NJM5RYzqgirFhQ5S_WpW6Q.jpeg" class="img-fluid rounded mb-3" alt="Perbedaan UI dan UX" loading="lazy" aria-describedby="uiux-desc">
+                    <p id="uiux-desc" class="source-link"><a href="https://medium.com/design-projects-ai/5-great-analogies-to-highlight-the-difference-between-ux-ui-93872748401a" target="_blank">Sumber: Medium</a></p>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-md-6" data-aos="fade-right">
+                    <h3><i class="fas fa-cogs me-2"></i> Elemen UI Penting</h3>
+                    <p><strong>Konsistensi:</strong> Menggunakan palet warna biru-ungu, font Inter, dan efek glassmorphism untuk tampilan seragam.</p>
+                    <p><strong>Ketanggapan:</strong> Tombol dan gambar memberikan umpan balik visual seperti hover untuk interaksi aktif.</p>
+                    <p><strong>Kata-kata Familiar:</strong> Istilah seperti "Beranda" dan "Timeline" memudahkan navigasi.</p>
+                </div>
+                <div class="col-md-6" data-aos="fade-left">
+                    <h3><i class="fas fa-users-cog me-2"></i> Komponen UX Penting</h3>
+                    <p><strong>Struktur Desain:</strong> Tata letak vertikal pada timeline dan roadmap memandu alur informasi.</p>
+                    <p><strong>Navigasi:</strong> Bottom menu mobile dan progress bar memastikan navigasi intuitif.</p>
+                    <p><strong>Aspek Visual:</strong> UX mendukung UI untuk tampilan estetis dan fungsional.</p>
+                    <p><strong>Interaksi:</strong> Efek hover dan tooltips meningkatkan keterlibatan pengguna.</p>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-md-6" data-aos="fade-right">
+                    <h3><i class="fas fa-star me-2"></i> UX: Branding, Content, dan Copywriting</h3>
+                    <p>UX mencakup branding untuk identitas visual konsisten, content yang relevan, dan copywriting yang jelas untuk pengalaman berkesan.</p>
+                </div>
+                <div class="col-md-6" data-aos="fade-left">
+                    <h3><i class="fas fa-bullseye me-2"></i> Tujuan UX Design</h3>
+                    <p>UX menjembatani tampilan dan sistem, menciptakan pengalaman intuitif dan memuaskan melalui user-centered design dan usability.</p>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-md-6" data-aos="fade-right">
+                    <h3><i class="fas fa-question-circle me-2"></i> Latar Belakang UI/UX</h3>
+                    <p>UI/UX berkembang dari antarmuka sederhana di 1980-an hingga desain modern berbasis AI. UI fokus pada visual, UX pada pengalaman pengguna.</p>
+                </div>
+                <div class="col-md-6" data-aos="fade-left">
+                    <h3><i class="fas fa-users me-2"></i> Peran UI/UX di Perusahaan</h3>
+                    <p><strong>Perusahaan Besar:</strong> UX Designer (riset), UI Designer (visual), dan UX Copywriter (teks).</p>
+                    <p><strong>Perusahaan Kecil:</strong> UI/UX Designer menangani semua aspek untuk efisiensi.</p>
+                </div>
+            </div>
+            <!-- Roadmap Section -->
+            <div class="row mt-5" id="roadmap">
+                <div class="col-md-12">
+                    <h2 class="text-center mb-5" data-aos="fade-up"><i class="fas fa-map-signs me-2"></i> Roadmap UI/UX</h2>
+                    <div class="roadmap">
+                        <!-- Fahami Fundamental UI/UX -->
+                        <div class="roadmap-item" data-aos="fade-right">
+                            <div class="row">
+                                <div class="col-md-6 roadmap-content">
+                                    <i class="fas fa-book icon"></i>
+                                    <h3>Fahami Fundamental UI/UX</h3>
+                                    <p>Pelajari dasar-dasar UI seperti warna, tipografi, dan layout, serta UX seperti riset pengguna dan usability untuk membangun fondasi desain.</p>
+                                </div>
+                                <div class="col-md-6"></div>
+                            </div>
+                        </div>
+                        <!-- Perbanyak Praktik -->
+                        <div class="roadmap-item" data-aos="fade-left">
+                            <div class="row">
+                                <div class="col-md-6"></div>
+                                <div class="col-md-6 roadmap-content">
+                                    <i class="fas fa-laptop-code icon"></i>
+                                    <h3>Perbanyak Praktik</h3>
+                                    <p>Buat wireframe, prototype, atau antarmuka sederhana dengan alat seperti Figma, lalu uji dan perbaiki berdasarkan masukan pengguna.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Explore Trend -->
+                        <div class="roadmap-item" data-aos="fade-right">
+                            <div class="row">
+                                <div class="col-md-6 roadmap-content">
+                                    <i class="fas fa-rocket icon"></i>
+                                    <h3>Explore Trend</h3>
+                                    <p>Ikuti tren desain seperti neumorphism, animasi mikro, atau AI untuk menciptakan antarmuka modern dan relevan.</p>
+                                </div>
+                                <div class="col-md-6"></div>
+                            </div>
+                        </div>
+                        <!-- Roadmap Image -->
+                        <div class="row mt-5" data-aos="fade-up">
+                            <div class="col-md-12">
+                                <div style="background: #ffffff; padding: 10px; border-radius: 10px;">
+                                    <img src="https://faruq1997.github.io/UIUX_Fundamental/roadmap_uiux_fundamental.png" class="roadmap-img img-fluid rounded mb-3" alt="Roadmap UI/UX Fundamental" loading="lazy" aria-describedby="roadmap-desc">
+                                </div>
+                                <p id="roadmap-desc" class="source-link"><a href="https://faruq1997.github.io/UIUX_Fundamental/" target="_blank">Sumber: Faruq1997</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p>© 2025 Fundamental UI/UX. Dibuat dengan <i class="fa fa-heart text-danger"></i> menggunakan Bootstrap 5.</p>
+            <p><a href="#home" class="text-white" aria-label="Kembali ke Atas"><i class="fas fa-arrow-up me-1"></i> Kembali ke Atas</a></p>
+        </div>
+    </footer>
+
+    <!-- Modals for Image Previews -->
+    <div class="modal fade" id="modal1990a" tabindex="-1" aria-labelledby="modal1990aLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: rgba(26, 26, 61, 0.95); backdrop-filter: blur(10px); color: #ffffff;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal1990aLabel"><i class="fas fa-desktop me-2"></i> Windows 3.1 Interface</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="http://toastytech.com/guis/win31progman3.png" class="img-fluid" alt="Windows 3.1 Interface" loading="lazy" aria-describedby="modal1990a-desc">
+                    <p id="modal1990a-desc" class="source-link mt-2"><a href="http://toastytech.com/guis/win31.html" target="_blank">Sumber: ToastyTech</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal1990b" tabindex="-1" aria-labelledby="modal1990bLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: rgba(26, 26, 61, 0.95); backdrop-filter: blur(10px); color: #ffffff;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal1990bLabel"><i class="fas fa-desktop me-2"></i> Macintosh System 7</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="https://static.wikia.nocookie.net/ipod/images/1/13/Macintosh_System_7.5.3_screenshot.png/revision/latest?cb=20100819232719" class="img-fluid" alt="Macintosh System 7" loading="lazy" aria-describedby="modal1990b-desc">
+                    <p id="modal1990b-desc" class="source-link mt-2"><a href="https://archive.org/details/AppleMacintoshSystem701" target="_blank">Sumber: Archive.org</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal2000a" tabindex="-1" aria-labelledby="modal2000aLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: rgba(26, 26, 61, 0.95); backdrop-filter: blur(10px); color: #ffffff;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal2000aLabel"><i class="fas fa-globe me-2"></i> MySpace 2005</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="https://images.squarespace-cdn.com/content/v1/639cc2b00e238a7078752259/ae5a02c7-fed8-453a-ad92-8aa6287d20bc/wwwmyspacecom.png?format=1500w" class="img-fluid" alt="MySpace 2005" loading="lazy" aria-describedby="modal2000a-desc">
+                    <p id="modal2000a-desc" class="source-link mt-2"><a href="https://www.capital-commerce.com/insight/echoes-of-myspace-how-the-first-social-media-titan-lost-its-crown" target="_blank">Sumber: Capital Commerce</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal2000b" tabindex="-1" aria-labelledby="modal2000bLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: rgba(26, 26, 61, 0.95); backdrop-filter: blur(10px); color: #ffffff;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal2000bLabel"><i class="fas fa-globe me-2"></i> Google 2000</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="https://www.webdesignmuseum.org/uploaded/timeline/google/google-2000.png" class="img-fluid" alt="Google 2000" loading="lazy" aria-describedby="modal2000b-desc">
+                    <p id="modal2000b-desc" class="source-link mt-2"><a href="https://www.webdesignmuseum.org/gallery/google-2000" target="_blank">Sumber: Web Design Museum</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal2010a" tabindex="-1" aria-labelledby="modal2010aLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: rgba(26, 26, 61, 0.95); backdrop-filter: blur(10px); color: #ffffff;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal2010aLabel"><i class="fas fa-mobile-alt me-2"></i> Apple 2010 Website</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="https://www.webdesignmuseum.org/uploaded/fullscreen/2010/apple-2010.jpg" class="img-fluid" alt="Apple 2010 Website" loading="lazy" aria-describedby="modal2010a-desc">
+                    <p id="modal2010a-desc" class="source-link mt-2"><a href="https://www.webdesignmuseum.org/gallery/apple-in-2010" target="_blank">Sumber: Web Design Museum</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal2010b" tabindex="-1" aria-labelledby="modal2010bLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: rgba(26, 26, 61, 0.95); backdrop-filter: blur(10px); color: #ffffff;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal2010bLabel"><i class="fas fa-mobile-alt me-2"></i> SEGA 2013 Website</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="https://www.webdesignmuseum.org/uploaded/fullscreen/2013/sega-2013.jpg" class="img-fluid" alt="SEGA 2013 Website" loading="lazy" aria-describedby="modal2010b-desc">
+                    <p id="modal2010b-desc" class="source-link mt-2"><a href="https://www.webdesignmuseum.org/gallery/sega-in-2013" target="_blank">Sumber: Web Design Museum</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal2020a" tabindex="-1" aria-labelledby="modal2020aLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: rgba(26, 26, 61, 0.95); backdrop-filter: blur(10px); color: #ffffff;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal2020aLabel"><i class="fas fa-robot me-2"></i> Neumorphic UI</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="https://demo.themesberg.com/neumorphism-ui/assets/img/neumorphism-ui-screenshot.jpg" class="img-fluid" alt="Neumorphic UI Design" loading="lazy" aria-describedby="modal2020a-desc">
+                    <p id="modal2020a-desc" class="source-link mt-2"><a href="https://demo.themesberg.com/neumorphism-ui/" target="_blank">Sumber: Themesberg</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal2020b" tabindex="-1" aria-labelledby="modal2020bLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: rgba(26, 26, 61, 0.95); backdrop-filter: blur(10px); color: #ffffff;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal2020bLabel"><i class="fas fa-robot me-2"></i> Figma Design Interface</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="https://www.figma.com/images/figma-homepage-screenshot.jpg" class="img-fluid" alt="Figma Design Interface" loading="lazy" aria-describedby="modal2020b-desc">
+                    <p id="modal2020b-desc" class="source-link mt-2"><a href="https://www.figma.com" target="_blank">Sumber: Figma</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <!-- AOS Animation JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1200,
+            easing: 'ease-in-out-back',
+            once: true
+        });
+        // Initialize tooltips
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+        // Scroll progress
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            document.querySelector('#scroll-progress .progress-bar').style.width = scrollPercent + '%';
+        });
+    </script>
+</body>
+</html>
