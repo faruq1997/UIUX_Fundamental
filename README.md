@@ -1,4 +1,4 @@
-# 🚀 Fundamental UI/UX Learning Hub
+# 🚀 Fundamental UI/UX Learn
 
 <div align="center">
   <img src="./roadmap_uiux_fundamental.png" alt="UI/UX Roadmap" width="800" />
